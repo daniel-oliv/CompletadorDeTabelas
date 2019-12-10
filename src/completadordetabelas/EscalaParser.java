@@ -13,6 +13,7 @@ import java.util.ArrayList;
  */
 public class EscalaParser {
     
+    
     public static ArrayList<int[]> findWordsPositions(ArrayList<String[]> table, String word)
     {
         //System.out.print("findWordsPositions - word: " + word + "   ");
@@ -56,7 +57,7 @@ public class EscalaParser {
         }
     }
     
-    public static void getEscalas(ArrayList<String[]> table, ArrayList<int[]> positions){
+    public static ArrayList<Escala> getEscalas(ArrayList<String[]> table, ArrayList<int[]> positions){
         ArrayList<Escala> escalas = new ArrayList<>();
         for (int i = 0; i < positions.size(); i++) {
             int lineNCol [] = positions.get(i);
@@ -65,24 +66,38 @@ public class EscalaParser {
             ArrayList<String[]> escalaTable = new ArrayList<>();
             String line []= new String[2];
             boolean isOver = false;
-            
+            int nLinesEmpty = 0;
             
             while(!isOver)
             {
-                int nLinesEmp = 0;
+                
                 //System.out.println("completadordetabelas.EscalaParser.getEscalas() iLine " + iLine);
                 //EscalaParser.mostrarMatCVS(table);
                 line  = table.get(iLine);
                 //System.out.println("completadordetabelas.EscalaParser.getEscalas() iCol " + iCol);
                 //System.out.println("completadordetabelas.EscalaParser.getEscalas() line[iCol]) " + line[iCol]);
                 //System.out.println("completadordetabelas.EscalaParser.getEscalas() line[iCol+2] " + line[iCol+2]);
-                
-                String lineEsc [] = {line[iCol], line[iCol+2]};
-                if(line[iCol].isEmpty())
+                String lineEsc [] = {"", ""};
+                //! se há três colunas
+                if(line.length - iCol >= 3)
                 {
-                    nLinesEmp++;
+                    lineEsc[0] = line[iCol];
+                    lineEsc[1] = line[iCol+2];
                 }
-                if(nLinesEmp >= 2)
+                //! se há pelo menos uma coluna
+                else if(line.length - iCol > 0)
+                {
+                    lineEsc[0] = line[iCol];
+                }
+                if(lineEsc[0].isEmpty())
+                {
+                    nLinesEmpty++;
+                }
+                else /// zera se não forem linhas consecutivas vazias
+                {
+                    nLinesEmpty = 0;
+                }
+                if(nLinesEmpty >= 2)
                 {
                     isOver = true;
                 }
@@ -91,15 +106,15 @@ public class EscalaParser {
                 {
                     isOver = true;
                 }                
-                System.out.println("lineEsc  " + lineEsc[0] + "           " + lineEsc[1]);
+                //System.out.println("lineEsc  " + lineEsc[0] + "           " + lineEsc[1]);
                 escalaTable.add(lineEsc);
             }
             System.out.println("nova Escala  =------------------------------");
             Escala esc = new Escala(escalaTable);
-            EscalaParser.mostrarMatCVS(escalaTable);
-            escalas.add(esc);
-            
+            //EscalaParser.mostrarMatCVS(escalaTable);
+            escalas.add(esc);  
         }
+        return escalas;
     }
     
 //    public static void getStops(ArrayList<int[]> mat, int i, int j, String type, String[] stopsStrings)

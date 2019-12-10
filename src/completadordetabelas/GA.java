@@ -228,7 +228,7 @@ public class GA {
                 
             }
             buffer.write(strLinha);
-            fos.close();
+            //fos.close();
             buffer.close();
             System.out.println("String gravada com sucesso!(Serialização)\n");
         } catch (IOException e) {

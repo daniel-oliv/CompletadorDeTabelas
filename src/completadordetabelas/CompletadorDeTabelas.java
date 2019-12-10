@@ -224,10 +224,22 @@ public class CompletadorDeTabelas {
         
         ArrayList<String[]> escalasCSV = GA.lerCSV_UTF8(NOME_ARQ_IN_ESCALAS, ",");
        // mostrarMatCVS(escalasCSV);
+       
         ArrayList<int[]> escalasPos = EscalaParser.findWordsPositions(escalasCSV, "ESCALA");
-        System.out.println("escalasPos.size " + escalasPos.size());
-        EscalaParser.showPositions(escalasPos);
-        EscalaParser.getEscalas(escalasCSV, escalasPos);
+        //System.out.println("escalasPos.size " + escalasPos.size());
+        //EscalaParser.showPositions(escalasPos);
+        
+        ArrayList<Escala> escalas = EscalaParser.getEscalas(escalasCSV, escalasPos);
+        
+        ArrayList<String[]> escalasParsed = new ArrayList<>();
+        escalasParsed.add(Escala.ESCALAS_KEYS);
+        for (Escala escala : escalas) {
+            escalasParsed.add(escala.toCSV());
+        }
+        String nomeArq = NOME_ARQ_IN_ESCALAS.split(".csv")[0];
+        String extensao = ".csv";
+        GA.escreverCVS_UTF8(nomeArq + "_mod" + extensao, 
+                            Escala.csvSeparator, escalasParsed);
         
 //        System.out.println("numLinhasComNenhumDado " + numLinhasSemNenhumDado(C_TEMP_ANUAL_IN, C_TEMP_FIM_IN) );
 //        

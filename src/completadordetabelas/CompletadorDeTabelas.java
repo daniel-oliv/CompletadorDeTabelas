@@ -111,6 +111,23 @@ public class CompletadorDeTabelas {
         
     }
     
+    public static boolean startsWithSemAcento(String str1, String str2) {
+        String bigger, smaller;
+        if(str1.length() > str2.length())
+        {
+            bigger = str1;
+            smaller = str2;
+        }
+        else
+        {
+            bigger = str2;
+            smaller = str1;
+        }
+        bigger = bigger.substring(0, smaller.length());
+        //System.out.println("startsWithSemAcento bigger " + bigger +  "     smaller " + smaller);
+        return saoIguaisSemAcento(bigger, smaller);
+    }
+    
     public static String getSemAcento(String str) {
         String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
@@ -216,30 +233,17 @@ public class CompletadorDeTabelas {
 //        return matData;
 //    }
     
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // TODO code application logic here
         
-        ArrayList<String[]> escalasCSV = GA.lerCSV_UTF8(NOME_ARQ_IN_ESCALAS, ",");
-       // mostrarMatCVS(escalasCSV);
-       
-        ArrayList<int[]> escalasPos = EscalaParser.findWordsPositions(escalasCSV, "ESCALA");
-        //System.out.println("escalasPos.size " + escalasPos.size());
-        //EscalaParser.showPositions(escalasPos);
         
-        ArrayList<Escala> escalas = EscalaParser.getEscalas(escalasCSV, escalasPos);
+        //matchFavoriteShifts();
+        matchProvaveisFerias();
         
-        ArrayList<String[]> escalasParsed = new ArrayList<>();
-        escalasParsed.add(Escala.ESCALAS_KEYS);
-        for (Escala escala : escalas) {
-            escalasParsed.add(escala.toCSV());
-        }
-        String nomeArq = NOME_ARQ_IN_ESCALAS.split(".csv")[0];
-        String extensao = ".csv";
-        GA.escreverCVS_UTF8(nomeArq + "_mod" + extensao, 
-                            Escala.csvSeparator, escalasParsed);
         
 //        System.out.println("numLinhasComNenhumDado " + numLinhasSemNenhumDado(C_TEMP_ANUAL_IN, C_TEMP_FIM_IN) );
 //        
@@ -271,7 +275,129 @@ public class CompletadorDeTabelas {
         //ArrayList<String[]>  matComp = GA.lerCSV(NOME_ARQ_OUT_COMP_UTF, ";");
         //mostrarMatCVS(matOutComp);
     }
-
     
+    public static void matchFavoriteShifts(){
+        String NOME_ARQ_MOTORITAS = "relacao_motoristas_ordem_alfabetica.csv";
+        ArrayList<String[]> allDrivers = GA.lerCSV_UTF8(NOME_ARQ_MOTORITAS, ",");
+        String NOME_ARQ_FAC_SHIFTS = "TURNOS_PREFERÊNCIAIS.CSV";
+        ArrayList<String[]> initFavShifts = GA.lerCSV_UTF8(NOME_ARQ_FAC_SHIFTS, ",");
+        
+        String NOME_ARQ_MOT_AND_SHIFTS = "motoristas_turnos.csv";
+        ArrayList<String[]> outCSV = new ArrayList<>();
+        outCSV.add(initFavShifts.get(0));
+        
+        
+        int countMatches = 0;
+        for (String[] lineTab1 : allDrivers) {
+            String driveName1 = lineTab1[0];
+            //System.out.println("matchFavoriteShifts() driveName1 "+ driveName1);
+            int countCandidates = 0;
+            String newLine [] = {driveName1, ""};
+            String lastFav = "";
+            String lastCandidate = "";
+            for (String[] lineTab2 : initFavShifts) {
+                String driveName2 = lineTab2[0];
+                //System.out.println("matchFavoriteShifts() driveName2 "+ driveName2);
+                String favShift = lineTab2[1];
+                
+                
+                if(startsWithSemAcento(driveName1, driveName2))
+                {
+                    lastCandidate = driveName2;
+                    lastFav = favShift;
+                    countCandidates++;
+                } 
+            }
+            if(countCandidates == 1)
+            {
+                newLine[1] = lastFav;
+                countMatches++;
+            }
+             outCSV.add(newLine);
+        }
+        
+        GA.escreverCVS_UTF8(NOME_ARQ_MOT_AND_SHIFTS, 
+                            ",", outCSV);
+        
+        System.out.println("completadordetabelas.CompletadorDeTabelas.matchFavoriteShifts() countMatches "+ countMatches);
+        
+    }
+    
+    public static void matchProvaveisFerias(){
+        String NOME_ARQ_MOTORITAS = "motoristas_turnos.csv";
+        ArrayList<String[]> allDrivers = GA.lerCSV_UTF8(NOME_ARQ_MOTORITAS, ",");
+        String NOME_ARQ_PROV_FERIAS = "motoristas_ferias.csv";
+        ArrayList<String[]> initFerias = GA.lerCSV_UTF8(NOME_ARQ_PROV_FERIAS, ",");
+        
+        String NOME_ARQ_MOT_AND_SHIFTS_VACATION = "motoristas_turnos_ferias.csv";
+        ArrayList<String[]> outCSV = new ArrayList<>();
+        outCSV.add(allDrivers.get(0));
+        
+        
+        int countMatches = 0;
+        for (String[] lineTab1 : allDrivers) {
+            String driveName1 = lineTab1[0];
+            if(driveName1.equals("MOTORISTA"))
+            {
+                continue;
+            }
+            
+            String turno = "";
+            if(lineTab1.length >= 2) turno = lineTab1[1];
+            //System.out.println("matchFavoriteShifts() driveName1 "+ driveName1);
+            int countCandidates = 0;
+            
+            String newLine [] = {driveName1, turno, ""};
+            String lastFerias = "";
+            String lastCandidate = "";
+            for (String[] lineTab2 : initFerias) {
+                String driveName2 = lineTab2[1];
+                //System.out.println("matchFavoriteShifts() driveName2 "+ driveName2);
+                String ferias = lineTab2[4];
+                
+                
+                if(startsWithSemAcento(driveName1, driveName2))
+                {
+                    lastCandidate = driveName2;
+                    lastFerias = ferias;
+                    countCandidates++;
+                } 
+            }
+            if(countCandidates == 1)
+            {
+                newLine[2] = lastFerias;
+                countMatches++;
+            }
+             outCSV.add(newLine);
+        }
+        
+        GA.escreverCVS_UTF8(NOME_ARQ_MOT_AND_SHIFTS_VACATION, 
+                            ",", outCSV);
+        
+        System.out.println("completadordetabelas.CompletadorDeTabelas.matchFavoriteShifts() countMatches "+ countMatches);
+        
+    }
+
+    public static void parseEscalas()
+    {
+        ArrayList<String[]> escalasCSV = GA.lerCSV_UTF8(NOME_ARQ_IN_ESCALAS, ",");
+       // mostrarMatCVS(escalasCSV);
+       
+        ArrayList<int[]> escalasPos = EscalaParser.findWordsPositions(escalasCSV, "ESCALA");
+        //System.out.println("escalasPos.size " + escalasPos.size());
+        //EscalaParser.showPositions(escalasPos);
+        
+        ArrayList<Escala> escalas = EscalaParser.getEscalas(escalasCSV, escalasPos);
+        
+        ArrayList<String[]> escalasParsed = new ArrayList<>();
+        escalasParsed.add(Escala.ESCALAS_KEYS);
+        for (Escala escala : escalas) {
+            escalasParsed.add(escala.toCSV());
+        }
+        String nomeArq = NOME_ARQ_IN_ESCALAS.split(".csv")[0];
+        String extensao = ".csv";
+        GA.escreverCVS_UTF8(nomeArq + "_mod" + extensao, 
+                            Escala.csvSeparator, escalasParsed);
+    }
     
 }

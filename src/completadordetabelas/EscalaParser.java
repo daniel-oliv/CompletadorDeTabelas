@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class EscalaParser {
     
     
-    public static ArrayList<int[]> findWordsPositions(ArrayList<String[]> table, String word)
+    public static ArrayList<int[]> findWordsPositions(ArrayList<String[]> table, String words[])
     {
         //System.out.print("findWordsPositions - word: " + word + "   ");
         ArrayList<int[]> positions = new ArrayList<>();
@@ -23,15 +23,24 @@ public class EscalaParser {
             //if(line.length > 0) System.out.print("linha " + i + "   ");            
             for (int j = 0; j < line.length; j++) {
                 //System.out.print(line[j] + "  ");
-                if(line[j].contains(word))
+                boolean containsAll = true;
+                for (int k = 0; k < words.length; k++) {
+                    if(!line[j].contains(words[k]))
+                    {
+                        containsAll = false;
+                        break;
+                    }
+                }
+                if(containsAll)
                 {
-                    
                     int lineAndCol [] = {i, j};
                     positions.add(lineAndCol);
                 }
+                
             }
             //if(line.length > 0) System.out.println();       
          }
+        System.out.println("completadordetabelas.EscalaParser.findWordsPositions() posições encontradas: " + positions.size());
         return positions;
     }
     
@@ -55,6 +64,34 @@ public class EscalaParser {
             }
             System.out.println();
         }
+    }
+    
+    public static ArrayList<String[]> getEscalas_Apenas_ID_Folga(ArrayList<String[]> table, ArrayList<int[]> positions){
+        ArrayList<String[]> escalas = new ArrayList<>();
+        String header [] = {"Texto Célula 1", "id", "FOLGA"};
+        escalas.add(header);
+        for (int i = 0; i < positions.size(); i++) {
+            int lineNCol [] = positions.get(i);
+            int iLine = lineNCol[0];
+            int iCol = lineNCol[1];
+            String cellText = table.get(iLine)[iCol];
+            String lineEsc [] = {cellText, "", ""};
+            
+            String temp [] = cellText.split("FOLGA");
+            for (int j = 0; j < 2; j++) {
+                temp[j] = temp[j].replaceAll("\\(|\\)|-", "").trim();
+                if(j == 1)
+                {
+                    temp[j] = temp[j].split(" ")[0].trim();
+                }
+                lineEsc[j+1] = temp[j];
+            }
+            
+            System.out.println("completadordetabelas.EscalaParser.getEscalas_Apenas_ID_Folga() cellText " + cellText);
+            
+            escalas.add(lineEsc);
+        }
+        return escalas;
     }
     
     public static ArrayList<Escala> getEscalas(ArrayList<String[]> table, ArrayList<int[]> positions){

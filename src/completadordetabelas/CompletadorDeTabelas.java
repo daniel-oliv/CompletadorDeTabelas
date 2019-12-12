@@ -242,8 +242,8 @@ public class CompletadorDeTabelas {
         
         
         //matchFavoriteShifts();
-        matchProvaveisFerias();
-        
+        //matchProvaveisFerias();
+        parseEscalas_Apenas_ID_Folga();
         
 //        System.out.println("numLinhasComNenhumDado " + numLinhasSemNenhumDado(C_TEMP_ANUAL_IN, C_TEMP_FIM_IN) );
 //        
@@ -377,13 +377,33 @@ public class CompletadorDeTabelas {
         System.out.println("completadordetabelas.CompletadorDeTabelas.matchFavoriteShifts() countMatches "+ countMatches);
         
     }
+    
+    
+    public static void parseEscalas_Apenas_ID_Folga()
+    {
+        String NOME_ARQ_IN = "TodasAsEscalas.csv";
+        ArrayList<String[]> escalasCSV = GA.lerCSV_UTF8(NOME_ARQ_IN, ",");
+       // mostrarMatCVS(escalasCSV);
+       String words [] = {"ESCALA", "FOLGA"};
+        ArrayList<int[]> escalasPos = EscalaParser.findWordsPositions(escalasCSV, words);
+        //System.out.println("escalasPos.size " + escalasPos.size());
+        //EscalaParser.showPositions(escalasPos);
+        
+        ArrayList<String[]> escalasTable = EscalaParser.getEscalas_Apenas_ID_Folga(escalasCSV, escalasPos);
+        
+        
+        String nomeArq = NOME_ARQ_IN.split(".csv")[0];
+        String extensao = ".csv";
+        GA.escreverCVS_UTF8(nomeArq + "_mod" + extensao, 
+                            ",", escalasTable);
+    }
 
     public static void parseEscalas()
     {
         ArrayList<String[]> escalasCSV = GA.lerCSV_UTF8(NOME_ARQ_IN_ESCALAS, ",");
        // mostrarMatCVS(escalasCSV);
-       
-        ArrayList<int[]> escalasPos = EscalaParser.findWordsPositions(escalasCSV, "ESCALA");
+        String words [] = {"ESCALA", "FOLGA"};
+        ArrayList<int[]> escalasPos = EscalaParser.findWordsPositions(escalasCSV, words);
         //System.out.println("escalasPos.size " + escalasPos.size());
         //EscalaParser.showPositions(escalasPos);
         
